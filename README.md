@@ -12,7 +12,7 @@ Modification of led_test for 3-color LED and 2 buttons.
 
 ## timers_and_interrupt
 
-Modification of led_and_buttons. It uses timer for changing color of led.
+Modification of led_and_buttons. It uses timer for changing color of led and interrupts for buttons actions.
 * 9 colors (minus white)
 * On first button click color change to white.
 * On second button click color LEDs off.
