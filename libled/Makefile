@@ -1,16 +1,21 @@
 BUILD_ROOT=../..
-OBJS = main.o
-
-BINARY_NAME = main
-
 include $(BUILD_ROOT)/common_defs.mk
 
-.PHONY: $(BINARY_NAME)
+LIB = libled.a
 
-$(BINARY_NAME): $(BINARY_NAME).bin
+all: $(LIB)
+	@echo "Done"
+
+SRC_DIR = ./src
+
+SRCS = $(wildcard  $(addsuffix /*.c, $(SRC_DIR)))
+OBJS = $(patsubst %.c, %.o, $(SRCS))
+DEPS = $(patsubst %.c, %.d, $(SRCS))
+
+$(LIB): $(OBJS)
+	@echo "Linking library $@"
+	$(MAKE_LIBRARY)
 
 clean:
-	@rm -f $(OBJS) main.elf main.bin main.elf.map
-
-flash: $(BINARY_NAME)
-	$(FLASH_BINARY)
+	@echo "Cleaning directory"
+	@rm -f $(OBJS) $(DEPS) $(LIB) 

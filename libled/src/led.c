@@ -1,11 +1,11 @@
-#include "led.h"
+#include "../include/led.h"
 
 #define TIM1_PERIOD 16400
 #define TIM1_PRESCALER 1
 #define TIM1_PULSE 16401
 #define STEP 64
 
-uint8_t Init(){
+uint8_t InitLeds(){
   GPIO_InitTypeDef GPIO_InitStructure = {0};
   TIM_TimeBaseInitTypeDef tim_struct = {0};
   TIM_OCInitTypeDef TIM_OCInitStruct = {0};
