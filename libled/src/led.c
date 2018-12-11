@@ -5,7 +5,7 @@
 #define TIM1_PULSE 16401
 #define STEP 64
 
-uint8_t InitLeds(){
+void InitLeds(){
   GPIO_InitTypeDef GPIO_InitStructure = {0};
   TIM_TimeBaseInitTypeDef tim_struct = {0};
   TIM_OCInitTypeDef TIM_OCInitStruct = {0};
@@ -46,20 +46,19 @@ uint8_t InitLeds(){
   TIM_OC3PreloadConfig(TIM1, TIM_OCPreload_Enable);
 
   TIM_CtrlPWMOutputs(TIM1, ENABLE);
-  return 0;
 }
 
-uint8_t SetColor(uint32_t color)
+void SetColorRGB(uint8_t red, uint8_t green, uint8_t blue)
 {
-  // Red
-  TIM_SetCompare1(TIM1, ((color >> 16) & 0xFF) * STEP);
-  // Green 
-  uint8_t green =  ((color >> 8) & 0xFF);
-  //0x92 = 147 === 0x00
-  //255 - 147 = 108
-  green = 147 + (uint8_t)(108.0 / 255.0 * green);
-  TIM_SetCompare2(TIM1, green * STEP);
-  // Blue
-  TIM_SetCompare3(TIM1, (color & 0xFF) * STEP);
-  return 0;
+   TIM_SetCompare1(TIM1, red * STEP);
+   TIM_SetCompare1(TIM1, green * STEP);
+   TIM_SetCompare1(TIM1, blue * STEP);
+}
+
+void SetColorHex(uint32_t color)
+{
+  // 0x92 = 147 === 0x00 of brightness
+  // 255 - 147 = 108 brigtness steps left
+  // green = 147 + (uint8_t)(0.4235 * green);
+  SetColorRGB((color >> 16) & 0xFF, 147 + (uint8_t)(108.0 / 255.0 * ((color >> 8) & 0xFF)), color & 0xFF);
 }
