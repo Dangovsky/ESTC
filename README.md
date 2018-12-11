@@ -28,3 +28,10 @@ Uses TIM1 PWM to change LEDs brightness.
 * On second button click britness of choosen color is increase.
 * TIM2 used for normal first button click.
 * Green led brightness fixed.
+
+## [libled](libled)
+
+Library to initialize LEDs, TIM1, TIM1 PWM, and set colors of LEDs
+* InitLeds() - initialize TIM1 and LEDS.
+* SetColorRGB(red, green, blue) -  set colors of LEDs given by tree diffirent integers.
+* SetColorHex(0x000000) -  set colors of LEDs given by one 24-bit integer.
