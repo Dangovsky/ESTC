@@ -26,4 +26,5 @@ Modification of led_and_buttons. It uses timer for changing color of led and int
 Uses TIM1 PWM to change LEDs brightness.
 * On first button click choose color red, green or blue. Base LED duplicate choosen color.
 * On second button click britness of choosen color is increase.
-* TIM2 used for normal buttons click. 
+* TIM2 used for normal first button click.
+* Green led brightness fixed.
