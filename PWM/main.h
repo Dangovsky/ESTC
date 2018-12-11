@@ -13,6 +13,4 @@
 /*  #error "Please select first the Evaluation board used in your application (in Project Options)" */
 /* #endif */
 
-#include <math.h>
-
 #endif  /* LEDS_AND_BUTTON_H */

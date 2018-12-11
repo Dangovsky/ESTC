@@ -3,21 +3,22 @@
 #define LED_COLORS_LENGTH 10
 #define TIM1_PERIOD 16400
 #define TIM1_PRESCALER 1
-#define TIM1_PULSE 16236
-#define STEP 164
-#define TIM2_PERIOD 50
-#define TIM2_PRESCALER 42000
+#define TIM1_PULSE 16401
+#define STEP 64
+#define TIM2_PERIOD 10
+#define TIM2_PRESCALER 84000
 
 /* color to incriment */
 static uint8_t current_color;
-/* leds "brightness" */
-static uint32_t leds_compare [3];
 /* system led colors RGB */
 static uint32_t sys_leds[3];
 /* timer for buttons*/
 static uint32_t timer_count;
 static uint32_t timer_firstb;
 static uint32_t timer_secb;
+/* comparator for TIM1*/
+static uint32_t comparator;
+static uint8_t green_comp;
 
 void TIM2_IRQHandler(void)
 {
@@ -33,7 +34,7 @@ void EXTI0_IRQHandler(void)
 {  
    if (EXTI_GetITStatus(EXTI_Line0) != RESET)
    {
-      if (timer_count - timer_firstb > 5)
+      if (timer_count - timer_firstb > 100)
       {
          if (++current_color > 2)
          {
@@ -41,10 +42,12 @@ void EXTI0_IRQHandler(void)
          }
          /* Turn all the leds off */
          GPIO_ResetBits(GPIOD, GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15);
+         /* Turn on corrent color*/
          GPIO_SetBits(GPIOD, sys_leds[current_color]);
+
+         timer_count = timer_firstb;
       }
       EXTI_ClearITPendingBit(EXTI_Line0);         
-      timer_count = timer_firstb;
    }
 }
 
@@ -52,43 +55,56 @@ void EXTI1_IRQHandler(void)
 {   
    if (EXTI_GetITStatus(EXTI_Line1) != RESET)
    {
-      if (timer_count - timer_secb > 5)
-      {  
-         leds_compare[current_color] -= 10;   
-         if (leds_compare[current_color] == 0) 
-         {
-            leds_compare[current_color] = 90;
-         }
-         switch (current_color)
-         {
-            case 0:
-               TIM_SetCompare1(TIM1, leds_compare[current_color] * STEP);
-               break;
-            case 1:
-               TIM_SetCompare2(TIM1, leds_compare[current_color] * STEP);
-               break;
-            case 2:
-               TIM_SetCompare3(TIM1, leds_compare[current_color] * STEP);
-               break;
-         }
-      }      
+      switch (current_color)
+      {
+         case 0:
+            comparator = TIM_GetCapture1(TIM1);
+            comparator += STEP;
+            if (comparator > 16400)
+               comparator = 0;
+            TIM_SetCompare1(TIM1, comparator);
+            break;
+         case 1:
+            /* comments below does not work */
+
+            /*comparator = TIM_GetCapture2(TIM1);
+             *comparator += STEP;
+             *if (comparator > 16400)
+             *   comparator = 0; 
+             */
+           /* 9454 === 0x00 of brightness 
+             * comparator = (uint32_t)(9454.1 + (6945.8 / 16400.0 * comparator));
+             * comparator = 9454 + (uint32_t)(0.4234 * comparator); 
+             * TIM_SetCompare2(TIM1, 9454 + (uint32_t)(0.4234 * comparator)); 
+             */
+
+            /* 147 === 0x00 of brightness */ 
+            /* 255 - 147 = 108 brightness steps left*/
+            green_comp++;
+            TIM_SetCompare2(TIM1, STEP * (147 + (uint8_t)(108.0 / 255.0 * green_comp))); 
+            break;
+         case 2:
+            comparator = TIM_GetCapture3(TIM1);
+            comparator += STEP;
+            if (comparator > 16400)
+               comparator = 0;
+            TIM_SetCompare3(TIM1, comparator);
+            break;
+      }
       EXTI_ClearITPendingBit(EXTI_Line1);      
-      timer_count = timer_secb;
    }
 }
 
 int main(void)
 {
   current_color = 0;    
-  leds_compare[0] = 100;
-  leds_compare[1] = 100;
-  leds_compare[2] = 100;
   sys_leds[0] = GPIO_Pin_14;
   sys_leds[1] = GPIO_Pin_12; 
   sys_leds[2] = GPIO_Pin_15;
   timer_count = 0;
   timer_firstb = 0;
   timer_secb = 0;
+  green_comp = 0;
 
   GPIO_InitTypeDef GPIO_InitStructure = {0};
   TIM_TimeBaseInitTypeDef tim_struct = {0};
@@ -185,8 +201,8 @@ int main(void)
 
   TIM_OCInitStruct.TIM_OCMode      = TIM_OCMode_PWM2;
   TIM_OCInitStruct.TIM_OutputState = TIM_OutputState_Enable;
-  TIM_OCInitStruct.TIM_OCPolarity  = TIM_OCPolarity_Low;
-  TIM_OCInitStruct.TIM_Pulse       = TIM1_PULSE - 1;
+  TIM_OCInitStruct.TIM_OCPolarity  = TIM_OCPolarity_High;
+  TIM_OCInitStruct.TIM_Pulse       = 0;
 
   TIM_OC1Init(TIM1, &TIM_OCInitStruct);
   TIM_OC1PreloadConfig(TIM1, TIM_OCPreload_Enable);

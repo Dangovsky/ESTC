@@ -1,15 +1,13 @@
 #include "main.h"
-
 #define SWITCH_DELAY 10000
+#define BUTTON_DELAY 750000
 #define LED_COLORS_LENGTH 10
-#define DALAYS_LENGTH 16
+#define DELAYS_LENGTH 40
 
 int main(void)
 {
-  GPIO_InitTypeDef GPIO_InitStructure;
+  GPIO_InitTypeDef GPIO_InitStructure = {0};
 
-  /* LEDs array to toggle between them */
-  //
   /* LEDs colors */
   uint32_t leds_colors[LED_COLORS_LENGTH] = {GPIO_Pin_8, GPIO_Pin_8 | GPIO_Pin_9, GPIO_Pin_8 | GPIO_Pin_10,
                                              GPIO_Pin_9, GPIO_Pin_9 | GPIO_Pin_8, GPIO_Pin_9 | GPIO_Pin_10,
@@ -17,16 +15,19 @@ int main(void)
                                              GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10};
   /* Color to toggle during iteration */
   uint8_t current_color = 0;
-  /* LED to toggle during iteration */
-  //uint8_t  current_led = 0;
   /* flag to disable buttons */
   char is_on = 1;
   /* flag to slowly wake up LEDs on color change*/  
   char first_time = 1;
-  /* magicly choosen delays for slowly wake uping LEDs */
-  uint32_t delays[DALAYS_LENGTH] = {250000,230000,210000,190000,170000,150000,130000,110000,90000,70000,
-                                     60000,50000,40000,30000,20000,10000};
+  /* magicly choosen delays for slowly wake up LEDs */
+  uint32_t delays[DELAYS_LENGTH];
 
+  delays[0] = 10000;
+  for (int i = 1; i < DELAYS_LENGTH; i++)
+  {
+     delays[i] = delays[i - 1] + 2000;
+  }
+  
   /* Enable peripheral clock for LEDs port */
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
   /* Enable peripheral clock for buttons port */
@@ -57,8 +58,10 @@ int main(void)
          is_changed_1 = 0;
 
     /* Read input from buttons */
-    for (i = 0; i < SWITCH_DELAY; i++)
+
+    for (i = 0; i < BUTTON_DELAY; i++)
     {
+       // change color
        if (!is_changed_0 && !GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_0))
        {
           if (++current_color > LED_COLORS_LENGTH)
@@ -68,6 +71,7 @@ int main(void)
           is_changed_0 = 1;
           first_time = 1;
        }
+       // on/off LEDs
        if (!is_changed_1 && !GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_1))
        {          
           if (is_on) // why is_on didn't work?
@@ -77,9 +81,9 @@ int main(void)
           else
           {
              is_on = 1;
+             first_time = 1;
           }
           is_changed_1 = 1;
-          first_time = 1;
        }
     }
     
@@ -87,15 +91,15 @@ int main(void)
     if(is_on)
     {
        /* Slowly wake up LEDs */
-       for (k = 0; first_time &&  k < DALAYS_LENGTH; k++)
+       for (k = 0; first_time &&  k < DELAYS_LENGTH; k++)
        {
           // Switch the LED off
           GPIO_SetBits(GPIOA, GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10);
-          for (i = 0; i < delays[k]; i++);
+          for (i = 0; i < delays[DELAYS_LENGTH - 1 - k]; i++);
 
           // Switch the LED on
           GPIO_ResetBits(GPIOA, leds_colors[current_color]);
-          for (i = 0; i < delays[DALAYS_LENGTH - 1 - k]; i++);
+          for (i = 0; i < delays[k]; i++);
        }
        first_time = 0;
        
