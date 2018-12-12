@@ -2,7 +2,7 @@
 
 DSR embedded system course.
 
- [`outer_common_defs`](outer_common_defs.mk) and [`outer_Makefile`](outer_Makefile) is are replasement for `common_defs` and `Makefile` from root of a [buildsystem](https://github.com/Morozov-5F/ESTC-build-system) for ESTC cources
+ [`outer_common_defs`](outer_common_defs.mk) and [`outer_Makefile`](outer_Makefile) are replasements for `common_defs` and `Makefile` from root of a [buildsystem](https://github.com/Morozov-5F/ESTC-build-system) for ESTC cources
 
 ## [led_test](led_test)
 
