@@ -2,6 +2,8 @@
 
 DSR embedded system course.
 
+ [`outer_common_defs`](outer_common_defs.mk) and [`outer_Makefile`](outer_Makefile) is are replasement for `common_defs` and `Makefile` from root of a [buildsystem](https://github.com/Morozov-5F/ESTC-build-system) for ESTC cources
+
 ## [led_test](led_test)
 
 Simple test maded by dsr.
@@ -33,5 +35,6 @@ Uses TIM1 PWM to change LEDs brightness.
 
 Library to initialize LEDs, TIM1, TIM1 PWM, and set colors of LEDs
 * InitLeds() - initialize TIM1 and LEDS.
-* SetColorRGB(red, green, blue) -  set colors of LEDs given by tree diffirent integers.
+* SetColorRGB(red, green, blue) -  set colors of LEDs given by tree diffirent 8-bit integers.
 * SetColorHex(0x000000) -  set colors of LEDs given by one 24-bit integer.
+* Green led brightness fixed.
