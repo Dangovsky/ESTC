@@ -2,7 +2,7 @@
 
 #define TIM1_PERIOD 16400
 #define TIM1_PRESCALER 1
-#define TIM1_PULSE 16401
+#define TIM1_PULSE 16400
 #define STEP 64
 
 void InitLeds(){
@@ -51,14 +51,15 @@ void InitLeds(){
 void SetColorRGB(uint8_t red, uint8_t green, uint8_t blue)
 {
    TIM_SetCompare1(TIM1, red * STEP);
-   TIM_SetCompare1(TIM1, green * STEP);
-   TIM_SetCompare1(TIM1, blue * STEP);
+   // 0x92 = 147 === 0x00 of brightness
+   // 255 - 147 = 108 brigtness steps left
+   // green = 147 + (uint8_t)(0.4235 * green);
+   uint32_t green_comparator = 9344 + (uint8_t)(27 * green);
+   TIM_SetCompare2(TIM1, green_comparator);
+   TIM_SetCompare3(TIM1, blue * STEP);
 }
 
 void SetColorHex(uint32_t color)
 {
-  // 0x92 = 147 === 0x00 of brightness
-  // 255 - 147 = 108 brigtness steps left
-  // green = 147 + (uint8_t)(0.4235 * green);
-  SetColorRGB((color >> 16) & 0xFF, 147 + (uint8_t)(108.0 / 255.0 * ((color >> 8) & 0xFF)), color & 0xFF);
+   SetColorRGB((color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF);
 }
