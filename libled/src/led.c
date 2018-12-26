@@ -50,13 +50,21 @@ void InitLeds(){
 
 void SetColorRGB(uint8_t red, uint8_t green, uint8_t blue)
 {
-   TIM_SetCompare1(TIM1, red * STEP);
+   // logistic function for nonlinear transform (~sigmoid)
+   // 0.04 is magic const
+   // comparator = 256 * STEP / (1 + exp((-0.04)*(color - 128)));
+   uint32_t red_comparator = (uint32_t)(16400 / (1 + exp((double)(-0.04)*(red - 128))));
+   TIM_SetCompare1(TIM1, red_comparator);
    // 0x92 = 147 === 0x00 of brightness
    // 255 - 147 = 108 brigtness steps left
    // green = 147 + (uint8_t)(0.4235 * green);
-   uint32_t green_comparator = 9344 + (uint8_t)(27 * green);
+   // uint32_t green_comparator = 9344 + (uint8_t)(27 * green);
+   // uint32_t green_comparator = (uint32_t)(16400 / (1 + exp((-0.04)*((147 + (uint8_t)(108.0 / 255.0 * green)) - 128))));
+   green = 147 + (uint8_t)(108.0 / 255.0 * green);
+   uint32_t green_comparator = (uint32_t)(16400 / (1 + exp((double)(-0.04)*(green - 201))));
    TIM_SetCompare2(TIM1, green_comparator);
-   TIM_SetCompare3(TIM1, blue * STEP);
+   uint32_t blue_comparator = (uint32_t)(16400 / (1 + exp((double)(-0.04)*(blue - 128))));
+   TIM_SetCompare3(TIM1, blue_comparator);
 }
 
 void SetColorHex(uint32_t color)

@@ -2,6 +2,7 @@
 #define LIBLED_H 
 
 #include <stm32f4xx.h>
+#include <math.h>
 
 /*! \file led.h
  *  \brief API for libled
@@ -9,9 +10,9 @@
  *  DSR ESTC course 5-th task
  */
 
-/*! \brief Initialise function.
+/*! \brief Initialize function.
  *
- *  Initialise timer, PWM and Pins.
+ *  Initialize timer, PWM and Pins.
  *  * Timer - TIM1.
  *  * PWM - from TIM1 with pins AF.
  *  * GROIA Pins - 8, 9, 10.
