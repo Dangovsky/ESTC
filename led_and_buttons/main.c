@@ -53,7 +53,7 @@ int main(void)
 
   while (1)
   {
-    int i, k;
+    uint32_t i, k;
     char is_changed_0 = 0, 
          is_changed_1 = 0;
 

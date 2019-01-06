@@ -6,10 +6,6 @@ int main(void)
 {
   GPIO_InitTypeDef GPIO_InitStructure;
 
-  /* LEDs array to toggle between them */
-  /* LED to toggle during iteration */
-  uint8_t  current_led = 0;
-
   /* Enable peripheral clock for LEDs port */
   RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 

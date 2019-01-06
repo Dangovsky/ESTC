@@ -1,7 +1,7 @@
 #include "main.h"
 
 #define TIM3_PERIOD 1000
-#define TIM3_PRESCALER 84000
+#define TIM3_PRESCALER 0xffff
 #define TIM2_PERIOD 2000
 #define TIM2_PRESCALER 42000
 

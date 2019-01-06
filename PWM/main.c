@@ -6,7 +6,7 @@
 #define TIM1_PULSE 16401
 #define STEP 64
 #define TIM2_PERIOD 10
-#define TIM2_PRESCALER 84000
+#define TIM2_PRESCALER 0xffff
 
 /* color to incriment */
 static uint8_t current_color;
