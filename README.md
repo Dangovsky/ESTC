@@ -34,7 +34,14 @@ Uses TIM1 PWM to change LEDs brightness.
 ## [libled](libled)
 
 Library to initialize LEDs, TIM1, TIM1 PWM, and set colors of LEDs
+* Green led brightness fixed.
+* Nonlinear brightness change (logistic function).
 * InitLeds() - initialize TIM1 and LEDS.
 * SetColorRGB(red, green, blue) -  set colors of LEDs given by tree diffirent 8-bit integers.
 * SetColorHex(0x000000) -  set colors of LEDs given by one 24-bit integer.
-* Green led brightness fixed.
+
+## [test](test)
+
+Show usage of [`libled`](libled).
+Work like [`PWM`](PWM), but call library function for color change.
+
