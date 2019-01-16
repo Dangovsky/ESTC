@@ -1,94 +1,119 @@
-#include "main.h"
+/*******************************************************************/
+// Цепляем нужные файлы
+#include "stm32f4xx.h"
+#include "stm32f4xx_rcc.h"
+#include "stm32f4xx_gpio.h"
+#include "stm32f4xx_usart.h"
 
-void USART_PutChar(char c)
+
+
+/*******************************************************************/
+// Объявляем переменные
+GPIO_InitTypeDef gpio;
+USART_InitTypeDef usart;
+// Пусть нам надо передать 8 байт, создадим массив для данных
+uint8_t sendData[] = "Hello, world!";
+uint8_t bytesToSend = sizeof(sendData);
+// Счетчик отправленных байт
+uint8_t sendDataCounter = 0;
+
+
+
+/*******************************************************************/
+// Инициализация всего, что нам надо
+void initAll()
 {
-    // Wait until transmit data register is empty
-    while (!USART_GetFlagStatus(USART1, USART_FLAG_TXE));
-    // Send a char using USART1
-    USART_SendData(USART1, c);
-}
+    // Включаем прерывания
+    __enable_irq();
 
-void USART_PutString(char *s)
-{
-    // Send a string
-    while (*s)
-    {
-        USART_PutChar(*s++);
-    }
-}
-
-uint16_t USART_GetChar()
-{
-    // Wait until data is received
-    while (!USART_GetFlagStatus(USART1, USART_FLAG_RXNE));
-    // Read received char
-    return USART_ReceiveData(USART1);
-}
-
-int main(void)
-{
-    // Enable clock for GPIOD (for orange LED)
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
-
-    // Initialization of GPIOD (for orange LED)
-    GPIO_InitTypeDef GPIO_InitDef;
-    GPIO_InitDef.GPIO_Pin = GPIO_Pin_13;
-    GPIO_InitDef.GPIO_Mode = GPIO_Mode_OUT;
-    GPIO_InitDef.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitDef.GPIO_PuPd = GPIO_PuPd_NOPULL;
-    GPIO_InitDef.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(GPIOD, &GPIO_InitDef);
-
-    // Enable clock for GPIOB
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-    // Enable clock for USART1
+    // Запускаем тактирование
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
 
-    // Connect PB6 to USART1_Tx
-    GPIO_PinAFConfig(GPIOB, GPIO_PinSource9, GPIO_AF_USART1);
-    // Connect PB7 to USART1_Rx
-    GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_USART1);
+    // Инициализация нужных пинов контроллера, для USART1 –
+    // PA9 и PA10
+    GPIO_StructInit(&gpio);
 
-    // Initialization of GPIOB
-    GPIO_InitTypeDef GPIO_InitStruct;
-    GPIO_InitStruct.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10;
-    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_AF;
-    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStruct.GPIO_PuPd = GPIO_PuPd_UP;
-    GPIO_Init(GPIOA, &GPIO_InitStruct);
+    gpio.GPIO_Mode = GPIO_Mode_AF;
+    gpio.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
+    gpio.GPIO_Speed = GPIO_Speed_50MHz;
+    gpio.GPIO_OType = GPIO_OType_PP;
+    gpio.GPIO_PuPd = GPIO_PuPd_UP;
+    GPIO_Init(GPIOB, &gpio);
 
-    // Initialization of USART1
-    USART_InitTypeDef USART_InitStruct;
-    USART_InitStruct.USART_BaudRate = 9600;
-    USART_InitStruct.USART_HardwareFlowControl =
-            USART_HardwareFlowControl_None;
-    USART_InitStruct.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-    USART_InitStruct.USART_Parity = USART_Parity_No;
-    USART_InitStruct.USART_StopBits = USART_StopBits_1;
-    USART_InitStruct.USART_WordLength = USART_WordLength_8b;
-    USART_Init(USART1, &USART_InitStruct);
+    /* gpio.GPIO_Mode = GPIO_Mode_AF; */
+    /* gpio.GPIO_Pin = GPIO_Pin_10; */
+    /* gpio.GPIO_Speed = GPIO_Speed_50MHz; */
+    /* gpio.GPIO_OType = GPIO_OType_PP; */
+    /* gpio.GPIO_PuPd = GPIO_PuPd_UP; */
+    /* GPIO_Init(GPIOA, &gpio); */
 
-    // Enable USART1
+    // И вот еще функция, которой не было при работе с STM32F10x,
+    // но которую нужно вызывать при использовании STM32F4xx
+    GPIO_PinAFConfig(GPIOB, GPIO_PinSource6, GPIO_AF_USART1);
+    GPIO_PinAFConfig(GPIOB, GPIO_PinSource7, GPIO_AF_USART1);
+
+   // А теперь настраиваем модуль USART
+    USART_StructInit(&usart);
+    usart.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
+    usart.USART_BaudRate = 9600;
+    usart.USART_Parity = USART_Parity_No;
+    usart.USART_StopBits = USART_StopBits_1;
+    usart.USART_WordLength = USART_WordLength_8b;
+
+
+    USART_Init(USART1, &usart);
+
+   // Включаем прерывания и запускаем USART
+    NVIC_EnableIRQ(USART1_IRQn);
     USART_Cmd(USART1, ENABLE);
+}
 
-    // Send "Hello, World!" to PC
-    USART_PutString("Hello, World!\n");
 
-    while (1)
+
+/*******************************************************************/
+// Функция main()
+int main()
+{
+
+    // Вызываем функцию инициализации
+    initAll();
+
+    // Включаем прерывание по окончанию передачи
+    USART_ITConfig(USART1, USART_IT_TC, ENABLE);
+    while(1)
     {
-        // Get a char from PC
-        uint16_t data = USART_GetChar();
+    // А тут мы ничего не делаем, вся работа у нас в прерывании
+        __NOP();
+    }
+}
 
-        if (data == 'H')
+
+
+/*******************************************************************/
+// Обработчик прерывания
+void USART1_IRQHandler()
+{
+    // Проверяем, действительно ли прерывание вызвано окончанием передачи
+    if (USART_GetITStatus(USART1, USART_IT_TC) != RESET)
+    {
+        // Очищаем флаг прерывания
+        USART_ClearITPendingBit(USART1, USART_IT_TC);
+
+        // Отправляем байт данных
+        USART_SendData(USART1, sendData[sendDataCounter]);
+
+        // Увеличиваем счетчик отправленных байт
+        sendDataCounter++;
+
+        // Если отправили все данные, начинаем все сначала
+        if  (sendDataCounter == bytesToSend)
         {
-            // If received char is 'H' then turn on orange LED
-            GPIO_SetBits(GPIOD, GPIO_Pin_13);
-        }
-        else if (data == 'L')
-        {
-            // If received char is 'L' then turn off orange LED
-            GPIO_ResetBits(GPIOD, GPIO_Pin_13);
+            sendDataCounter = 0;
         }
     }
 }
+
+
+
+/*******************************************************************/
