@@ -45,3 +45,7 @@ Library to initialize LEDs, TIM1, TIM1 PWM, and set colors of LEDs
 Show usage of [`libled`](libled).
 Work like [`PWM`](PWM), but call library function for color change.
 
+## [serial](Serial)
+
+Inint USART on PB6 and send a message.
+Use code from [here](https://microtechnics.ru/programmirovanie-stm32f4-usart-primer-programmy/).
